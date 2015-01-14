@@ -1,0 +1,16 @@
+set nu
+set nowrap
+set mouse=a
+set shiftwidth=4 softtabstop=4
+set ts=4
+set incsearch ignorecase hlsearch
+nnoremap <silent> <Space> :silent noh<Bar>echo<CR>
+" Press space to clear search highlighting and any message already displayed.
+" " nnoremap <silent> <Space> :silent noh<Bar>echo<CR>
+"
+"autocmd bufnewfile *main.c so /home/shay/a/csomers/cooltools.txt
+"autocmd bufnewfile *.c exe "1," . 28 . "g/cooltools.txt :.*/s//cooltool.txt : " .expand("%")
+"autocmd bufnewfile *.c exe "1," . 28 . "g/Creation Date :.*/s//Creation Date : " .strftime("%d-%m-%Y")
+"autocmd Bufwritepre,filewritepre *.c execute "normal ma"
+"autocmd Bufwritepre,filewritepre *.c exe "1," . 28 . "g/Last Modified :.*/s/Last Modified :.*/Last Modified : " .strftime("%c")
+"autocmd bufwritepost,filewritepost *.c execute "normal `a"
