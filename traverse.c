@@ -1,12 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
 
 // ==============================================================
 // ==============================================================
 // DATA STRUCTURES
 struct BST {
-	struct BST * l;
-	struct BST * r;
+	struct BST * left;
+	struct BST * right;
 	char val;
 };
 
@@ -17,48 +19,149 @@ struct Stack {
 struct SNode {
 	struct SNode * next;
 	struct BST * ret;	
+	int ldone;
+	int rdone;
 };
+
 
 // ==============================================================
 // ==============================================================
 // PROGRAM 
-int main(int argc, char * argv[]) {
-	
-	
-	return(EXIT_SUCCESS);
-}
-
 
 
 // ==============================================================
 // BST FUNCTIONS
-struct BST *	tree_combine(struct BST * lc, struct BST * rc);
+struct BST *	tree_combine_with(struct BST ** lc, struct BST ** rc, char c);
 struct BST *	tree_plant(char c);
 void			tree_chop_down(struct BST * vic);
 void			tree_visit(struct BST * node);
+void			tree_print(struct BST * root, int depth);
 void			tree_prefix(struct BST * node);
 void			tree_infix(struct BST * node);
 void			tree_postfix(struct BST * node);
+
+// COMBINE
+/* This function can be implemented a number of ways. In this case, it is both
+ * a create function, a combine function, and clears the previous pointers
+ */
+struct BST * tree_combine_with(struct BST ** lc, struct BST ** rc, char c) {
+	struct BST * root = tree_plant(c);
+	if(!root) return NULL;
+	root->left = *lc;
+	root->right = *rc;
+	*lc = NULL;
+	*rc = NULL;
+	return(root);
+}
+// ALLOC
+struct BST * tree_plant(char c) {
+	struct BST * root = malloc(sizeof(struct BST));
+	if(!root) return NULL;
+	root->val = c;
+	return(root);
+}
+// DEALLOC
+void tree_chop_down(struct BST * vic) {
+	if(vic) {
+		tree_chop_down(vic->left);
+		tree_chop_down(vic->right);
+		free(vic);
+	}
+}
+// PRINT NODE
+void tree_visit(struct BST * node) {
+	printf("%c", node->val);
+}
+// PRINT TREE
+void tree_print(struct BST * root, int depth) {
+	if(root) {
+		printf("\n");
+		int count; 
+		for(count = 0; count <= depth; count++) {
+			printf("\t");
+		}
+		printf("(%c)", root->val);
+		tree_print(root->left, depth + 1);
+		tree_print(root->right, depth + 1);
+	}
+}
+
+
+/* --------------------------------------------------------------\
+ *  Traverse Functions
+ *		currently set up to print out prefix, infix, and postfix,
+ *		representations of an expression tree. It is to do this 
+ *		with a stack, *non-recursively*. 
+\* -------------------------------------------------------------*/
+// TRAVERSE [N__LR]
+void tree_prefix(struct BST * root) {
+}
+// TRAVERSE [L_N_R]
+void tree_infix(struct BST * root) {
+	// important objects
+	struct BST * node = root;
+	struct Stack * STACK = stack_create;
+
+	// counters and flags
+	int count = 20;
+	int ldone = 0;
+	int rdone = 0;
+	// process
+	while(count--) {
+		// VISIT CONDITIONS
+		if((!node->left && !node->right)  ||
+		   (ldone && !rdone)) {
+			tree_visit(node);
+		}
+		// TRAVEL CONDITONS
+		if(node->left || node->right) {
+			if(!ldone && node->left) {
+				stack_push(STACK, node);					
+				stack_flags(STACK, 1, 0);
+				node = node->left;
+				ldone = 1;
+			}
+			if(!lflag && node->right) {
+				stack_push(STACK, node);
+				stack_flags(STACK, 1, 0);
+				node = node->right;
+				rdone = 1;
+			}
+		}// RETURN CONDITIONS
+		else {
+			node = stack_pop(STACK);
+			rflag++;
+	}
+	stack_destroy(STACK);
+}
+// TRAVERSE [LR__N]
+void tree_postfix(struct BST * root) {
+}
 // ==============================================================
 // STACK & NODE FUNCTION 
-int				stack_isempty(struct Stack * S);
 struct Stack *	stack_create(void);
 void			stack_destroy(struct Stack * S);
-struct Stack *	stack_node_create(struct BST *);
-void			stack_node_destroy(struct SNode * S);
 struct BST *	stack_pop(struct Stack * S);
+struct BST *	stack_pull(struct Stack * S);
 struct Stack *	stack_push(struct Stack * S, struct BST * bst);
+
+void			stack_flags(struct Stack * S, int lf, int rf);
+
+int				stack_isempty(struct Stack * S);
+struct SNode *	stack_node_create(struct BST *);
+void			stack_node_destroy(struct SNode * S);
+
+
 
 // ISEMPTY
 int	stack_isempty(struct Stack * S) {
 	return((!S->sn)? 1 : 0);
 } 
 // CREATE
-struct Stack *	stack_create(void);
+struct Stack *	stack_create(void) {
 	struct Stack * NEW = malloc(sizeof(struct Stack));
 	NEW->sn = NULL;
 	return(NEW);
-
 }
 // DESTROY
 void stack_destroy(struct Stack * S) {
@@ -68,7 +171,7 @@ void stack_destroy(struct Stack * S) {
 	free(S);
 }
 // ALLOC NODE
-struct Stack *	stack_node_create(struct BST * bst) {
+struct SNode * stack_node_create(struct BST * bst) {
 	struct SNode * nsn = malloc(sizeof(struct SNode));
 	nsn->ret = bst;
 	nsn->next = NULL;
@@ -78,7 +181,7 @@ struct Stack *	stack_node_create(struct BST * bst) {
 void stack_node_destroy(struct SNode * sn) {	
 	if(sn) {
 		stack_node_destroy(sn->next);
-		bst_destroy(sn->ret);
+		tree_chop_down(sn->ret);
 		free(sn);
 	}
 }
@@ -90,8 +193,14 @@ struct BST * stack_pop(struct Stack * S) {
 	S->sn = old->next;
 	old->next = NULL;
 	old->ret = NULL;
-	stack_node_destroy(old);
+	free(old);
+	//stack_node_destroy(old);
 	return(contents);
+}
+// PULL NODE
+struct BST * stack_pull(struct Stack * S) {
+	if(stack_isempty(S)) return NULL;
+	return(S->sn);	
 }
 // PUSH NODE
 struct Stack * stack_push(struct Stack * S, struct BST * bst) {
@@ -100,6 +209,55 @@ struct Stack * stack_push(struct Stack * S, struct BST * bst) {
 	S->sn = push;// push new node onto top position
 	return(S);
 }
+// STACK FLAGS
+void stack_flags(struct Stack * S, int lf, int rf) {
+	S->sn->ldone += lf;
+	S->sn->rdone += rf;
+}	
+// ==============================================================
+// ==============================================================
+struct BST * function_tree(int tn);
+void		 function_line(int ln);
 
-// ==============================================================
-// ==============================================================
+int main(int argc, char * argv[]) {
+	if(argc >= 1) printf("%s ", argv[0]);
+	if(argc >= 2) printf("%s ", argv[1]);
+	if(argc != 2 || !isdigit(argv[1][0])) return EXIT_FAILURE;
+	int tn = atoi(argv[1]);
+	struct BST * tree = function_tree(tn);	
+	function_line(1);
+	tree_print(tree, 0);
+	function_line(0);
+	if(!tree) return EXIT_FAILURE;
+
+
+	return EXIT_SUCCESS ;
+}
+
+void function_line(int ln) {
+	if(ln) printf("\n==============================================================");
+	else   printf("\n--------------------------------------------------------------");
+}
+struct BST * function_tree(int tn) {
+	struct BST * V = NULL;
+	struct BST * W = NULL;
+	struct BST * X = NULL;
+	struct BST * Y = NULL;
+	struct BST * Z = NULL;
+	if(tn == 1) {
+		W = tree_plant('A');
+		X = tree_plant('B');
+		Y = tree_combine_with(&W, &X, '+');
+		Z = tree_plant('C');
+		W = tree_combine_with(&Y, &Z, '-');	
+
+		X = tree_plant('B');
+		Y = tree_plant('A');
+		Z = tree_combine_with(&X, &Y, '+');
+		X = tree_plant('C');
+		Y = tree_combine_with(&X, &Z, '$');
+
+		X = tree_combine_with(&W, &Y, '-');
+	}
+	return(X);
+}
