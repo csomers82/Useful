@@ -1,3 +1,9 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+char ** split(const char * str, const char * delims, int * arrLen) `{
+	// LOCAL DECLARATIONS
 	int ndelims;//# of delimiter characters in char *
 	char * lense;//points to current part of string
 	//char * keep;//points to lense top
@@ -64,37 +70,3 @@
 	*arrLen = ndelims + 1;
 	return(strArr);
 }
-
-/*
-// }{ FUNCTIONS }{
-};
-int mastermind_main(int argc, char * argv[]); 
-void	mastermind_print_logo(void);
-WINDOW* mastermind_window_0(int * width, int * height);
-
-int mastermind_solve(struct Display *, struct Play);
-int     mastermind_menu(struct Display *, struct Play *);
-int         mastermind_present_menu(struct Display *, struct Menu, char * temp);
-void    mastermind_start_gameplay(struct Play *);
-int         mastermind_custom_input(char * prompt, int ubound, int lbound);
-char*		mastermind_gen_puzzle(struct Play);
-int		mastermind_input(struct Display *, struct Play, struct Box *, int);
-int		mastermind_eval_box(struct Box * input, const char * puzzle);
-void		mastermind_print_pegs(struct Play, char *);
-void		mastermind_print_clues(struct Box);
-void			mastermind_print_wait(int bound, char * what, char how);
-void		mastermind_give_advice(struct Box);
-
-int mastermind_create(struct Display *, struct Play);
-
-int mastermind_guide(struct Display *, struct Play);
-
-void  printcolor(char * str, char * attr, char txtc, char bckc);  
-char * * split(const char * str, const char * delims, int * arrLen);
-void wait(float);
-char option_tagfetch(struct Display *, struct Menu *);
-void option_highlight(struct Display *, struct Menu *, int); 
-void option_toggle(struct Display *, struct Menu *, int); 
-void pmove(struct Point * p, int y, int x);
-int master_scroll(struct Display *, struct Play, int, bool user);
-*/
